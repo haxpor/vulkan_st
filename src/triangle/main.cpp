@@ -4,6 +4,10 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <map>
+#include <queue>
+#include <tuple>
+#include <optional>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -43,6 +47,93 @@ public:
         initVulkan();
         mainLoop();
         cleanup();
+    }
+
+    struct QueueFamilyIndices {
+        std::optional<uint32_t> graphicsFamily;
+
+        bool isComplete() {
+            return graphicsFamily.has_value();
+        }
+    };
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+        QueueFamilyIndices indices;
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        int i = 0;
+        for (const auto& queueFamily : queueFamilies) {
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+                break;
+            }
+
+            ++i;
+        }
+
+        return indices;
+    }
+
+    void pickPhysicalDevice() {
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+        if (deviceCount == 0)
+            throw std::runtime_error("failed to find GPUs with Vulkan support!");
+
+        std::vector<VkPhysicalDevice> devices (deviceCount);
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+        // device scores
+        typedef int DeviceScore;
+        typedef bool DeviceIsDiscreteGPU;
+        std::priority_queue<std::tuple<VkPhysicalDevice, DeviceScore, DeviceIsDiscreteGPU>> pq;
+
+        for (int i=0; i<devices.size(); ++i) {
+            bool isDiscrete;
+            int score = rateDevice(devices[i], isDiscrete);
+            pq.push( std::make_tuple(devices[i], score, isDiscrete) );
+        }
+
+        if (pq.size() > 0) {
+            // custom selection of gpu can be added here
+            physicalDevice = std::get<0>(pq.top());        // for now, accept whether it's discrete GPU or others
+        }
+
+        if (physicalDevice == VK_NULL_HANDLE)
+            throw std::runtime_error("failed to find a suitable GPU with vulkan support!");
+    }
+
+    ///
+    /// Rate the input device then return score.
+    int rateDevice(VkPhysicalDevice device, bool& isDiscrete) {
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+        int score = 0;
+
+        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+            score += 100;
+            isDiscrete = true;
+        }
+        else {
+            score += 30;
+            isDiscrete = false;
+        }
+
+        return score;
+    }
+
+    bool isDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties& prop, VkPhysicalDeviceFeatures& features) {
+        QueueFamilyIndices indices = findQueueFamilies(device);
+        return indices.isComplete();
     }
 
     bool checkAllRequiredExtensionsSupported() {

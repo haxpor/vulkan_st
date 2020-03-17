@@ -1,5 +1,5 @@
-CFLAGS_DEBUG = -std=c++14 -ggdb -Wall -Wextra -pedantic
-CFLAGS_RELEASE = -std=c++14 -O2 -Wall -Wextra -pedantic -DNDEBUG
+CFLAGS_DEBUG = -std=c++17 -ggdb -Wall -Wextra -pedantic
+CFLAGS_RELEASE = -std=c++17 -O2 -Wall -Wextra -pedantic -DNDEBUG
 LDFLAGS = -lglfw -lvulkan
 OUT = BasicApp.out
 
