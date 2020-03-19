@@ -42,13 +42,6 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 
 class HelloTriangleApplication {
 public:
-    void run() {
-        initWindow();
-        initVulkan();
-        mainLoop();
-        cleanup();
-    }
-
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
 
@@ -56,6 +49,15 @@ public:
             return graphicsFamily.has_value();
         }
     };
+
+public:
+    void run() {
+        initWindow();
+        initVulkan();
+        mainLoop();
+        cleanup();
+    }
+
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
         QueueFamilyIndices indices;
 
@@ -79,7 +81,6 @@ public:
     }
 
     void pickPhysicalDevice() {
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
         if (deviceCount == 0)
@@ -96,7 +97,8 @@ public:
         for (int i=0; i<devices.size(); ++i) {
             bool isDiscrete;
             int score = rateDevice(devices[i], isDiscrete);
-            pq.push( std::make_tuple(devices[i], score, isDiscrete) );
+            if (score > 0)
+                pq.push( std::make_tuple(devices[i], score, isDiscrete) );
         }
 
         if (pq.size() > 0) {
@@ -116,6 +118,10 @@ public:
 
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+        // return early if not suitable to be used
+        if (!isDeviceSuitable(device, deviceProperties, deviceFeatures))
+            return 0;
 
         int score = 0;
 
@@ -203,6 +209,40 @@ private:
     void initVulkan() {
         createInstance();
         setupDebugMessenger();
+        pickPhysicalDevice();
+        createLogicalDevice();
+    }
+
+    void createLogicalDevice() {
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+        VkDeviceQueueCreateInfo queueCreateInfo = {};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        queueCreateInfo.queueCount = 1;
+
+        float queuePriority = 1.0f;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+
+        VkPhysicalDeviceFeatures deviceFeatures = {};
+
+        VkDeviceCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.queueCreateInfoCount = 1;
+        createInfo.pEnabledFeatures = &deviceFeatures;
+
+        createInfo.enabledExtensionCount = 0;   // we don't need any device specific extensions for now
+#ifdef ENABLE_VALIDATION_LAYERS
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+#else
+        createInfo.enabledLayerCount = 0;
+#endif
+
+        if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create logical device!");
+        }
     }
 
     void setupDebugMessenger() {
@@ -231,6 +271,7 @@ private:
     }
 
     void cleanup() {
+        vkDestroyDevice(device, nullptr);
 #ifdef ENABLE_VALIDATION_LAYERS
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 #endif
@@ -308,6 +349,9 @@ private:
     GLFWwindow* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkDevice device;
+    VkQueue graphicsQueue;
 };
 
 int main() {
