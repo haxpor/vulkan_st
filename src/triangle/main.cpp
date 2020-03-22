@@ -108,6 +108,8 @@ public:
 
         if (physicalDevice == VK_NULL_HANDLE)
             throw std::runtime_error("failed to find a suitable GPU with vulkan support!");
+
+        printDeviceInfo(physicalDevice);
     }
 
     ///
@@ -135,6 +137,63 @@ public:
         }
 
         return score;
+    }
+
+    ///
+    /// Print device's information
+    void printDeviceInfo(VkPhysicalDevice& device) {
+        VkPhysicalDeviceProperties2 deviceProps2;
+        VkPhysicalDeviceDriverProperties driverProps;
+        driverProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+        driverProps.pNext = nullptr;
+
+        deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        deviceProps2.pNext = &driverProps;
+        vkGetPhysicalDeviceProperties2(device, &deviceProps2);
+
+        VkPhysicalDeviceProperties deviceProps = deviceProps2.properties;
+
+        std::cout << "Device Information\n";
+        std::cout << "  API version: " << VK_VERSION_MAJOR(deviceProps.apiVersion) << '.' << VK_VERSION_MINOR(deviceProps.apiVersion) << '.' << VK_VERSION_PATCH(deviceProps.apiVersion) << '\n';
+
+        std::cout << "  Driver version: " << VK_VERSION_MAJOR(deviceProps.driverVersion) << '.' << VK_VERSION_MINOR(deviceProps.driverVersion) << '.' << VK_VERSION_PATCH(deviceProps.driverVersion) << '\n';   //probably not right, possibly be vendor's specific method
+        std::cout << "  Vendor ID: " << std::hex << deviceProps.vendorID << " [" << getVendorString(deviceProps.vendorID) << "]\n";
+        std::cout << "  Device type: " << getDeviceTypeString(deviceProps.deviceType) << '\n';
+        std::cout << "  Device name: " << deviceProps.deviceName << '\n';
+
+        std::cout << "  Driver version (string): " << driverProps.driverInfo << '\n';
+        std::cout << "  Driver name: " << driverProps.driverName << '\n';
+        std::cout << "  Driver info: " << driverProps.driverInfo << '\n';
+        std::cout << "  Driver ID: " << std::hex << driverProps.driverID << '\n';
+    }
+
+    std::string getVendorString(uint32_t vendorID) const {
+        switch (vendorID) {
+            case 0x1002: return "AMD";
+            case 0x1010: return "ImgTec";
+            case 0x10DE: return "NVIDIA";
+            case 0x13B5: return "ARM";
+            case 0x5143: return "Qualcomm";
+            case 0x8086: return "Intel";
+            default: return "Unknown";
+        }
+    }
+
+    std::string getDeviceTypeString(uint32_t deviceType) const {
+        switch (deviceType) {
+            case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+                return "Other";
+            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+                return "iGPU";
+            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+                return "Discrete GPU";
+            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+                return "Virtual GPU";
+            case VK_PHYSICAL_DEVICE_TYPE_CPU:
+                return "CPU";
+            default:
+                return "Unknown";
+        }
     }
 
     bool isDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties& prop, VkPhysicalDeviceFeatures& features) {
@@ -231,8 +290,8 @@ private:
         createInfo.pQueueCreateInfos = &queueCreateInfo;
         createInfo.queueCreateInfoCount = 1;
         createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.enabledExtensionCount = 0;
 
-        createInfo.enabledExtensionCount = 0;   // we don't need any device specific extensions for now
 #ifdef ENABLE_VALIDATION_LAYERS
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -294,7 +353,7 @@ private:
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "No Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
+        appInfo.apiVersion = VK_API_VERSION_1_2;    // my GPU supports (for now) until 1.1.114
 
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
