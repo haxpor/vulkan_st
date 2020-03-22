@@ -8,6 +8,7 @@
 #include <queue>
 #include <tuple>
 #include <optional>
+#include <string>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -156,7 +157,8 @@ public:
         std::cout << "Device Information\n";
         std::cout << "  API version: " << VK_VERSION_MAJOR(deviceProps.apiVersion) << '.' << VK_VERSION_MINOR(deviceProps.apiVersion) << '.' << VK_VERSION_PATCH(deviceProps.apiVersion) << '\n';
 
-        std::cout << "  Driver version: " << VK_VERSION_MAJOR(deviceProps.driverVersion) << '.' << VK_VERSION_MINOR(deviceProps.driverVersion) << '.' << VK_VERSION_PATCH(deviceProps.driverVersion) << '\n';   //probably not right, possibly be vendor's specific method
+        // driverVersion is vendor-specific
+        std::cout << "  Driver version: " << getDriverVersionString(deviceProps.vendorID, deviceProps.driverVersion) << '\n';
         std::cout << "  Vendor ID: " << std::hex << deviceProps.vendorID << " [" << getVendorString(deviceProps.vendorID) << "]\n";
         std::cout << "  Device type: " << getDeviceTypeString(deviceProps.deviceType) << '\n';
         std::cout << "  Device name: " << deviceProps.deviceName << '\n';
@@ -165,6 +167,24 @@ public:
         std::cout << "  Driver name: " << driverProps.driverName << '\n';
         std::cout << "  Driver info: " << driverProps.driverInfo << '\n';
         std::cout << "  Driver ID: " << std::hex << driverProps.driverID << '\n';
+    }
+
+    std::string getDriverVersionString(uint32_t vendorID, uint32_t driverVersion) const {
+        switch (vendorID) {
+            // AMD
+            case 0x1002:
+                return std::to_string( VK_VERSION_MAJOR(driverVersion) ) + "." + std::to_string( VK_VERSION_MINOR(driverVersion) ) + "." + std::to_string( VK_VERSION_PATCH(driverVersion) );
+            // NVIDIA
+            case 0x10DE:
+                return std::to_string( (driverVersion >> 22) & 0x3ff ) + "." + std::to_string( (driverVersion >> 14) & 0x0ff ) + "." + std::to_string( (driverVersion >> 6) & 0x0ff ) + "." + std::to_string( driverVersion & 0x003f );
+            // Intel
+            case 0x8086:
+                return std::to_string( (driverVersion >> 14) ) + "." + std::to_string( driverVersion & 0x3fff );
+
+            // Use vulkan convention for the less
+            default:
+                return std::to_string( VK_VERSION_MAJOR(driverVersion) ) + "." + std::to_string( VK_VERSION_MINOR(driverVersion) ) + "." + std::to_string( VK_VERSION_PATCH(driverVersion) );
+        }
     }
 
     std::string getVendorString(uint32_t vendorID) const {
