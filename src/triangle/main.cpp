@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <cstring>
 #include <map>
@@ -17,7 +18,7 @@
 const int WIDTH = 800;
 const int HEIGHT = 600;
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const float FPS_GRANULARITY_MS = 100.0f;
+const float FPS_GRANULARITY_SEC = 1.0f; // how often to update FPS
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -874,6 +875,16 @@ private:
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
             drawFrame();
+
+            ++numRenderedFrames;
+            const double currTime = glfwGetTime();
+            const double diffTime = currTime - prevTime;
+            if (diffTime >= FPS_GRANULARITY_SEC) {
+                prevTime = currTime;
+                fps = numRenderedFrames / diffTime;   
+                std::cout << std::fixed << std::setprecision(2) << std::setfill('0') << fps << " FPS\n";
+                numRenderedFrames = 0;
+            }
         }
 
         vkDeviceWaitIdle(device);
@@ -1048,6 +1059,10 @@ private:
     std::vector<VkFence> inFlightFences;
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
+
+    uint32_t numRenderedFrames = 0;
+    float fps = 0.0f;
+    double prevTime = 0.0f;
 };
 
 int main() {
