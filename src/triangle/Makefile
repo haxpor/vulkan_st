@@ -19,7 +19,7 @@ main-d.o: main.cpp
 	g++ -c $< $(CFLAGS_DEBUG) -o main-d.o
 
 test:
-	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d ./$(OUT)
+	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation:VK_LAYER_LUNARG_monitor VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d ./$(OUT)
 
 test-gdb:
 	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d gdb ./$(OUT)
