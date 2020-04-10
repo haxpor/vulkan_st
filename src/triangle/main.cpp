@@ -456,7 +456,6 @@ private:
     }
 
     void createCommandBuffers() {
-        std::cout << "concurrency: " << std::thread::hardware_concurrency() << '\n';
         commandBuffers.resize(swapChainFramebuffers.size());
 
         VkCommandBufferAllocateInfo allocInfo = {};
