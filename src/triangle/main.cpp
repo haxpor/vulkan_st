@@ -1051,7 +1051,6 @@ private:
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> imagesInFlight;
-    size_t currentFrame = 0;
     size_t semaphoreIndex = 0;
 
     uint32_t numRenderedFrames = 0;
