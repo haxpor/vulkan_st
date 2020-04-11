@@ -2,15 +2,16 @@
 CFLAGS_DEBUG = -std=c++17 -ggdb -Wall -Wextra -pedantic -I$(VULKAN_SDK)/include -I./
 CFLAGS_RELEASE = -std=c++17 -O2 -Wall -Wextra -pedantic -DNDEBUG -I$(VULKAN_SDK)/include -I./
 LDFLAGS = -lglfw -L$(VULKAN_SDK)/lib -lvulkan
-OUT = Triangle.out
+OUT_DEBUG = Triangle-Debug.out
+OUT_RELEASE = Triangle.out
 
 .PHONY: debug release test clean pre-check
 
 release: pre-check VkBase.o main.o
-	g++ $(word 2, $^) $(word 3, $^) -o $(OUT) $(LDFLAGS)
+	g++ $(word 2, $^) $(word 3, $^) -o $(OUT_RELEASE) $(LDFLAGS)
 
 debug: pre-check VkBase-d.o main-d.o
-	g++ $(word 2, $^) $(word 3, $^) -o $(OUT) $(LDFLAGS)
+	g++ $(word 2, $^) $(word 3, $^) -o $(OUT_DEBUG) $(LDFLAGS)
 
 main.o: main.cpp 
 	g++ -c $< $(CFLAGS_RELEASE) -o $@
@@ -24,11 +25,10 @@ main-d.o: main.cpp
 VkBase-d.o: VkBase.cpp
 	g++ -c $< $(CFLAGS_DEBUG) -o $@
 
-test:
-	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation:VK_LAYER_LUNARG_monitor VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d ./$(OUT)
-
-test-gdb:
-	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d gdb ./$(OUT)
+source:
+	export LD_LIBRARY_PATH=$(VULKAN_SDK)/lib
+	export VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation
+	export VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d
 
 clean:
 	rm -f *.out *.o
