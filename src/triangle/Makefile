@@ -25,10 +25,13 @@ main-d.o: main.cpp
 VkBase-d.o: VkBase.cpp
 	g++ -c $< $(CFLAGS_DEBUG) -o $@
 
-source:
-	export LD_LIBRARY_PATH=$(VULKAN_SDK)/lib
-	export VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation
-	export VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d
+# sourcing within Makefile is only possible if it's an action line only
+test:
+	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d ./$(OUT_RELEASE)
+
+# same
+test-debug:
+	LD_LIBRARY_PATH=$(VULKAN_SDK)/lib VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_standard_validation VK_LAYER_PATH=$(VULKAN_SDK)/etc/vulkan/explicit_layer.d ./$(OUT_DEBUG)
 
 clean:
 	rm -f *.out *.o
