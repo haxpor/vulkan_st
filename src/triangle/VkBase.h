@@ -97,6 +97,11 @@ private:
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void createIndexBuffer();
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void createDescriptorSetLayout();
+    void createUniformBuffers();
+    void updateUniformBuffer(uint32_t currentImage);
+    void createDescriptorPool();
+    void createDescriptorSets();
 
 private:
     GLFWwindow* window;
@@ -113,6 +118,7 @@ private:
     VkExtent2D swapChainExtent;
     std::vector<VkImageView> swapChainImageViews;
     VkRenderPass renderPass;
+    VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
     std::vector<VkFramebuffer> swapChainFramebuffers;
@@ -130,6 +136,10 @@ private:
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
+    std::vector<VkBuffer> uniformBuffers;       // uniform buffer for each swapchain's image
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    VkDescriptorPool descriptorPool;
+    std::vector<VkDescriptorSet> descriptorSets;
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
