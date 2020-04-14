@@ -49,11 +49,15 @@ void VkBase::run() {
 void VkBase::initWindow(const int width, const int height, std::string title) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     windowTitle = title;    // save window's title for later use
-    initialWindowWidth = width;
-    initialWindowHeight = height;
-    window = glfwCreateWindow(initialWindowWidth, initialWindowHeight, title.c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, VkBase::framebufferResizeCallback);
+}
+
+void VkBase::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<VkBase*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
 }
 
 void VkBase::initVulkan() {
@@ -95,8 +99,15 @@ void VkBase::mainLoop() {
 void VkBase::drawFrame() {
     semaphoreIndex = (semaphoreIndex + 1) % imageAvailableSemaphores.size();
     uint32_t imageIndex;
-    if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[semaphoreIndex], VK_NULL_HANDLE, &imageIndex) != VK_SUCCESS)
+    VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[semaphoreIndex], VK_NULL_HANDLE, &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreateSwapChain();
         return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
 
     vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     vkResetFences(device, 1, &imagesInFlight[imageIndex]);
@@ -133,26 +144,25 @@ void VkBase::drawFrame() {
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
-    vkQueuePresentKHR(presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+        recreateSwapChain();
+        framebufferResized = false;
+    }
+    else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
 }
 
 void VkBase::cleanup() {
+    cleanupSwapChain();
     for (size_t i=0; i<swapChainImages.size(); ++i) {
         vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(device, imagesInFlight[i], nullptr);
     }
     vkDestroyCommandPool(device, commandPool, nullptr);
-    for (auto& framebuffer : swapChainFramebuffers) {
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
-    }
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
-    for (auto& imageView : swapChainImageViews) {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
     vkDestroyDevice(device, nullptr);
 #ifdef ENABLE_VALIDATION_LAYERS
     DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
@@ -955,7 +965,11 @@ VkExtent2D VkBase::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities
     else {
         // sanity check and choose in range of support, not assume reasonable value of
         // window's resolution
-        VkExtent2D actualExtent = {initialWindowWidth, initialWindowHeight};
+        int width;
+        int height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
         actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
         return actualExtent;
@@ -986,4 +1000,33 @@ bool VkBase::checkValidationLayerSupport() const {
     }
 
     return true;
+}
+
+void VkBase::recreateSwapChain() {
+    vkDeviceWaitIdle(device);
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createRenderPass();
+    createGraphicsPipeline();
+    createFramebuffers();
+    createCommandBuffers();
+}
+
+void VkBase::cleanupSwapChain() {
+    for (size_t i=0; i<swapChainFramebuffers.size(); ++i)
+        vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+
+    vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyRenderPass(device, renderPass, nullptr);
+
+    for (size_t i=0; i<swapChainImageViews.size(); ++i)
+        vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
 }

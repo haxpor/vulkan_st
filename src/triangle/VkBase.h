@@ -61,6 +61,7 @@ private:
     void createInstance();
     std::vector<const char*> getRequiredExtensions() const;
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
     void setupDebugMessenger();
     void createSyncObjects();
     void createCommandPool();
@@ -90,6 +91,8 @@ private:
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
     bool checkValidationLayerSupport() const;
+    void recreateSwapChain();
+    void cleanupSwapChain();
 
 private:
     GLFWwindow* window;
@@ -118,11 +121,9 @@ private:
     size_t currentFrame = 0;
     size_t semaphoreIndex = 0;
     std::string windowTitle;
+    bool framebufferResized = false;
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
     double prevTime = 0.0f;
-
-    int initialWindowWidth;
-    int initialWindowHeight;
 };
