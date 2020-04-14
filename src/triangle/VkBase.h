@@ -65,6 +65,7 @@ private:
     void setupDebugMessenger();
     void createSyncObjects();
     void createCommandPool();
+    void createVertexBuffer();
     void createCommandBuffers();
     void createFramebuffers();
     void createRenderPass();
@@ -75,7 +76,6 @@ private:
     void createSurface();
     void createLogicalDevice();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
-
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) const;
     void pickPhysicalDevice();
@@ -93,6 +93,7 @@ private:
     bool checkValidationLayerSupport() const;
     void recreateSwapChain();
     void cleanupSwapChain();
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 private:
     GLFWwindow* window;
@@ -122,6 +123,8 @@ private:
     size_t semaphoreIndex = 0;
     std::string windowTitle;
     bool framebufferResized = false;
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
