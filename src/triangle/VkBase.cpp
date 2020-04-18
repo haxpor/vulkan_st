@@ -866,8 +866,7 @@ void VkBase::createLogicalDevice() {
     }
 
     // no special request to enable features on device just yet
-    VkPhysicalDeviceFeatures deviceFeatures = {};
-
+    VkPhysicalDeviceFeatures deviceFeatures = {}; 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -1128,6 +1127,7 @@ void VkBase::recreateSwapChain() {
     createFramebuffers();
     createUniformBuffers();
     createDescriptorPool();
+    createDescriptorSets();
     createCommandBuffers();
 }
 
