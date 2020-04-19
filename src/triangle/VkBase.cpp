@@ -123,6 +123,8 @@ void VkBase::initVulkan() {
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+
+    /* warning: we could better off create a single large buffer holding all sub-buffers and use offset to locate each type of buffer for better efficiency. */
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
