@@ -140,6 +140,7 @@ private:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
+    bool isNeedStagingBuffer = true;       // APU doesn't need staging buffer for better performance
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
