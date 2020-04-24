@@ -66,6 +66,8 @@ private:
     void createSyncObjects();
     void createCommandPool();
     void createTextureImage();
+    void createTextureImageView();
+    void createTextureSampler();
     void createVertexBuffer();
     void createCommandBuffers();
     void createFramebuffers();
@@ -85,7 +87,7 @@ private:
     std::string getDriverVersionString(uint32_t vendorID, uint32_t driverVersion) const;
     std::string getVendorString(uint32_t vendorID) const;
     std::string getDeviceTypeString(uint32_t deviceType) const;
-    bool isDeviceSuitable(VkPhysicalDevice device) const;
+    bool isDeviceSuitable(VkPhysicalDevice device, const VkPhysicalDeviceFeatures* supportedFeatures) const;
     bool checkDeviceExtensionSupport(VkPhysicalDevice device) const;
     bool checkAllRequiredExtensionsSupported() const;
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
@@ -108,6 +110,7 @@ private:
     void createDescriptorSets();
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+    VkImageView createImageView(VkImage image, VkFormat format);
 
 private:
     GLFWwindow* window;
@@ -149,6 +152,8 @@ private:
     bool isNeedStagingBuffer = true;       // APU doesn't need staging buffer for better performance
     VkImage textureImage;
     VkDeviceMemory textureImageMemory;
+    VkImageView textureImageView;
+    VkSampler textureSampler;
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
