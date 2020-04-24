@@ -65,6 +65,7 @@ private:
     void setupDebugMessenger();
     void createSyncObjects();
     void createCommandPool();
+    void createTextureImage();
     void createVertexBuffer();
     void createCommandBuffers();
     void createFramebuffers();
@@ -95,13 +96,18 @@ private:
     void cleanupSwapChain();
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     void createIndexBuffer();
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void createDescriptorSetLayout();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
     void createDescriptorPool();
     void createDescriptorSets();
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 private:
     GLFWwindow* window;
@@ -141,6 +147,8 @@ private:
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
     bool isNeedStagingBuffer = true;       // APU doesn't need staging buffer for better performance
+    VkImage textureImage;
+    VkDeviceMemory textureImageMemory;
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
