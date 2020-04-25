@@ -110,7 +110,11 @@ private:
     void createDescriptorSets();
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-    VkImageView createImageView(VkImage image, VkFormat format);
+    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+    void createDepthResources();
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+    VkFormat findDepthFormat();
+    bool hasStencilComponent(VkFormat format);
 
 private:
     GLFWwindow* window;
@@ -154,6 +158,9 @@ private:
     VkDeviceMemory textureImageMemory;
     VkImageView textureImageView;
     VkSampler textureSampler;
+    VkImage depthImage;
+    VkDeviceMemory depthImageMemory;
+    VkImageView depthImageView;
 
     uint32_t numRenderedFrames = 0;
     float fps = 0.0f;
