@@ -1016,6 +1016,8 @@ void VkBase::createLogicalDevice() {
 
     // check if device supports separate depth/stencil layouts
     VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures queriedSeparateDepthStencilFeature = {};
+    queriedSeparateDepthStencilFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
+
     VkPhysicalDeviceFeatures2 queriedDeviceFeatures2 = {};
     queriedDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     queriedDeviceFeatures2.pNext = &queriedSeparateDepthStencilFeature;
