@@ -3,7 +3,7 @@ STB_LIB_INCLUDE = -I../externals
 TINYOBJLOADER_LIB_INCLUDE = -I../externals
 CFLAGS_DEBUG = -std=c++17 -ggdb -Wall -Wextra -pedantic -I$(VULKAN_SDK)/include -I./ $(STB_LIB_INCLUDE) $(TINYOBJLOADER_LIB_INCLUDE)
 CFLAGS_RELEASE = -std=c++17 -O2 -Wall -Wextra -pedantic -DNDEBUG -I$(VULKAN_SDK)/include -I./ $(STB_LIB_INCLUDE) $(TINYOBJLOADER_LIB_INCLUDE)
-LDFLAGS = -lglfw -L$(VULKAN_SDK)/lib -lvulkan
+LDFLAGS = -lglfw -L$(VULKAN_SDK)/lib -lvulkan -lm
 OUT_DEBUG = Triangle-Debug.out
 OUT_RELEASE = Triangle.out
 
