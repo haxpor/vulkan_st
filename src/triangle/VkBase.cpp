@@ -1732,5 +1732,7 @@ void VkBase::loadModel() {
         }
     }
 
-    std::cout << "size of vertices: " << vertices.size() << "\n";
+#ifndef NDEBUG
+    std::cout << "size of processed vertices: " << vertices.size() << " from " << std::dec << attrib.vertices.size() << "\n";
+#endif
 }
