@@ -1,4 +1,8 @@
+#ifdef _MSC_VER
+#include <vulkan/vulkan.h>
+#else
 #define GLFW_INCLUDE_VULKAN
+#endif
 #include <GLFW/glfw3.h>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

@@ -1,3 +1,6 @@
 *.o
 *.sw*
 *.out
+*.pdb
+*.exe
+*.ilk
