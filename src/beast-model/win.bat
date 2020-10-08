@@ -2,7 +2,7 @@
 setlocal
 
 set outputDir=.\
-set outName=beastModel
+set outName=beast-model
 
 rem if execute 'clean' then clean all artifact files
 if "%1" == "clean" (
@@ -25,6 +25,11 @@ rem if compile or link operation failed then quit early
 if %ERRORLEVEL% GEQ 1 (
     EXIT /B %ERRORLEVEL%
 )
+
+rem compile shader
+pushd shaders
+call compile.bat
+popd
 
 if not exist %outputDir%\glfw3.dll (
     copy /Y ..\..\externals\lib\glfw-vs2019\glfw3.dll %outputDir%\glfw3.dll
