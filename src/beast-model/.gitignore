@@ -1,0 +1,5 @@
+*.spv
+bin/
+
+# we will copy required .dll from externals/lib into output directory for each sub-project
+*.dll
