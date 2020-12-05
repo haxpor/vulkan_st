@@ -1,4 +1,4 @@
-CFLAGS = -std=c++14 -ggdb -O2 -Wall -Wextra -pedantic
+CFLAGS = -std=c++14 -ggdb -O2 -Wall -Wextra -pedantic -I../../externals/include
 LDFLAGS = -lglfw -lvulkan
 OUT = VulkanTest.out
 
