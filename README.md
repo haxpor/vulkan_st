@@ -3,6 +3,12 @@ Vulkan studying repo
 
 # Build
 
+## Common
+
+I decided to include binary assets `assets/` into the repository as well although it's not good
+practice to include such things into git. But I will keep it minimally, and to get benefit of convinence
+in quickly getting start and building demos without a need to externally download from elsewhere.
+
 ## Windows
 
 Download and install vulkansdk from [vulkan.lunarg.com](https://vulkan.lunarg.com/) to your machine.

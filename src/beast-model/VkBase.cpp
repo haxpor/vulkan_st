@@ -17,8 +17,8 @@
 #include <cstring>
 #include <cmath>
 
-const std::string MODEL_PATH = "models/mythical-beast.obj";
-const std::string TEXTURE_PATH = "textures/Lev-edinorog_complete_0.png";
+const std::string MODEL_PATH = "../../assets/MythicalBeast/mythical-beast.obj";
+const std::string TEXTURE_PATH = "../../assets/MythicalBeast/Lev-edinorog_complete_0.png";
 
 const float FPS_GRANULARITY_SEC = 1.0f; // how often to update FPS
 char title[50];

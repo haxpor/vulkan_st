@@ -9,11 +9,11 @@ OUT_RELEASE = BeastModel.out
 
 .PHONY: debug release test clean pre-check
 
-release: pre-check VkBase.o main.o
-	g++ $(word 2, $^) $(word 3, $^) -o $(OUT_RELEASE) $(LDFLAGS)
+release: pre-check compile-shaders VkBase.o main.o 
+	g++ $(word 3, $^) $(word 4, $^) -o $(OUT_RELEASE) $(LDFLAGS)
 
-debug: pre-check VkBase-d.o main-d.o
-	g++ $(word 2, $^) $(word 3, $^) -o $(OUT_DEBUG) $(LDFLAGS)
+debug: pre-check compile-shaders VkBase-d.o main-d.o
+	g++ $(word 3, $^) $(word 4, $^) -o $(OUT_DEBUG) $(LDFLAGS)
 
 main.o: main.cpp 
 	g++ -c $< $(CFLAGS_RELEASE) -o $@
@@ -26,6 +26,9 @@ main-d.o: main.cpp
 
 VkBase-d.o: VkBase.cpp
 	g++ -c $< $(CFLAGS_DEBUG) -o $@
+
+compile-shaders: shaders/main.vert shaders/main.frag
+	cd shaders && ./compile.sh
 
 # sourcing within Makefile is only possible if it's an action line only
 test:
